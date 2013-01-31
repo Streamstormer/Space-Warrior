@@ -398,7 +398,7 @@ void DrawObject(SDL_Surface *screen, float z, int sx, int sy, int type)
     }
 }
 
-void draw_object_instances(SDL_Surface *screen,float *vx, float *vy)
+void draw_object_instances(SDL_Surface *screen)
 {
     int i, c;
     SDL_Rect dest;
@@ -492,16 +492,17 @@ itemType* addMenu(struct menu_obj *m_obj)
 {
     itemType *currentItem=create_item_generic(m_obj->name,m_obj);
     insert_item(currentItem,&list_start);
+    return currentItem; // Why no return!?
 }
 void addMenu2Panel(struct menu_obj *panel, struct menu_obj *objs,int objs_size)
 {
     panel->overlay_objs=malloc(objs_size*sizeof(struct menu_obj));
-    printf("%d\n",panel->overlay_objs);
+    printf("%p\n",panel->overlay_objs);
     if(panel->overlay_objs!=NULL)
     {
         for(int i=0;i<objs_size;i++)
         {
-            printf("%d %d \n",panel->overlay_objs[i],objs[i]);
+            printf("%p %p \n",panel->overlay_objs[i],objs[i]);  // Ignor Warning. That is a pointer!
             panel->overlay_objs[i]=objs[i];
         }
         panel->objs_size=objs_size;
@@ -608,7 +609,7 @@ void mouse_control(float *vx, float *vy, SDL_Surface *screen,SDL_Event *event)
 
     }
 }
-int key_control(float *vx, float *vy,SDL_Surface *screen,SDL_Event *event)
+int key_control(float *vx, float *vy,SDL_Event *event)
 {
     if(event->type==SDL_KEYDOWN)
     {
@@ -683,12 +684,12 @@ int event_control(float *vx, float *vy, SDL_Surface *screen)
             break;
         case SDL_KEYDOWN:
         case SDL_KEYUP:
-            return key_control(vx,vy,screen,&event);
+            return key_control(vx,vy,&event);
         case SDL_QUIT:
-            return 0;
+            return false;
         default: break;
     }
-    return 1;
+    return true;
 
 }
 void cleanUp(Mix_Music *play_sound)
@@ -697,7 +698,7 @@ void cleanUp(Mix_Music *play_sound)
      Mix_CloseAudio();
      SDL_Quit();
 }
-// main
+// The Windows SDL Lib needs argc and argv... WHY!?
 int main(int argc, char *argv[])
 {
     float vx=0, vy=0;
@@ -706,17 +707,26 @@ int main(int argc, char *argv[])
     if ( SDL_Init(SDL_INIT_AUDIO|SDL_INIT_VIDEO) < 0 )
     {
         fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
-        exit(1);
+        return EXIT_FAILURE;
     }
     atexit(SDL_Quit);
+#ifdef __WIN32__
     freopen("CON","w",stdout);
     freopen("CON","w",stderr);
+#endif
 
     //init SDL_ttf
     if (TTF_Init() == -1)
     {
-        printf("Unable to initialize SDL_ttf: %s \n", TTF_GetError());
+        fprintf(stderr, "Unable to initialize SDL_ttf: %s \n", TTF_GetError());
+        return EXIT_FAILURE;
     }else ttf_font = TTF_OpenFont("Ubuntu.ttf", 14);
+
+    if(ttf_font == NULL)
+    {
+        fprintf(stderr, "Could not load Font: %s \n", TTF_GetError());
+        return EXIT_FAILURE;
+    }
 
     // Initialize screen
     width=1024;
@@ -725,30 +735,35 @@ int main(int argc, char *argv[])
     if( screen == NULL )
     {
         fprintf(stderr, "Unable to init video: %s\n", SDL_GetError());
-        exit(1);
+        return EXIT_FAILURE;
     }
 
-#if withaudio == 1
+#if withaudio
     Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
-    Mix_Music* play_sound = Mix_LoadMUS("music.wav");
+    Mix_Music* playMusic = Mix_LoadMUS("music.wav");
+    if(playMusic == NULL)
+        fprintf(stderr, "Could not Load Music-File: %s \n", Mix_GetError());
+
     Mix_PlayMusic(play_sound, -1);
 #endif
+
     //init
     init_object_instances();
-    bool b=true;
-    while(b)
+
+    bool running=true;
+    while(running)
     {
-        b=event_control(&vx, &vy,screen);
-        while(!paused&&life>0)
+        running=event_control(&vx, &vy,screen);
+        while(!paused && life>0)
         {
-            draw_object_instances(screen,&vx,&vy);
+            draw_object_instances(screen);
             draw_interface_objects(screen);
             event_control(&vx, &vy,screen);
             move_object_instances(vx, vy);
             //flip
             SDL_Flip(screen);
         }
-        draw_object_instances(screen,&vx,&vy);
+        draw_object_instances(screen);
         draw_interface_objects(screen);
         if(paused)
         {
@@ -758,7 +773,7 @@ int main(int argc, char *argv[])
         SDL_Flip(screen);
     }
 
-#if withaudio == 1
+#if withaudio
     cleanUp audio and exit.
     cleanUp(play_sound);
 #endif

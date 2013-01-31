@@ -16,9 +16,18 @@ itemType *create_item()
         scanf("%s",ptr->name);  // Enter a name
         ptr->size=1000;
         ptr->data=malloc(ptr->size*sizeof(unsigned char));  // Allocate some memory for a payload
-        // TO DO: Have to check for NULL Pointer
+        if(ptr->data == NULL)
+        {
+            perror("Could not allocate memory for data: ");
+            exit(EXIT_FAILURE);
+        }
+        return ptr;    // Return pointer to the new item
     }
-    return ptr;    // Return pointer to the new item
+    else
+    {
+        perror("Could not allocate memory for ptr: ");
+        exit(EXIT_FAILURE);
+    }
 }
 itemType *create_item_generic(char* name, void* data)
 {
@@ -30,12 +39,18 @@ itemType *create_item_generic(char* name, void* data)
     if(ptr!=NULL)
     {
         ptr->guid=guid_ctr++;   // Generate a unique ID
-        if(name!=-1)strcpy(ptr->name,name);
+        if(name!='\0')
+            strcpy(ptr->name,name);
+
         ptr->size=0;
         ptr->data=data;
-        // TO DO: Have to check for NULL Pointer
+        return ptr;
     }
-    return ptr;    // Return pointer to the new item
+    else
+    {
+        perror("Could not allocate memory for ptr: ");
+        exit(EXIT_FAILURE);
+    }
 }
 itemType *create_item_generic_payload(char* name, void* data,int data_size)
 {
@@ -49,12 +64,18 @@ itemType *create_item_generic_payload(char* name, void* data,int data_size)
         ptr->guid=guid_ctr++;   // Generate a unique ID
         strcpy(ptr->name,name);
         ptr->size=data_size;
-        unsigned char *c=malloc(data_size*sizeof(unsigned char));
+        unsigned char *string=malloc(data_size*sizeof(unsigned char));
+        if(string == NULL)
+        {
+            perror("Could not allocate memory for string: ");
+            exit(EXIT_FAILURE);
+        }
+
         for(int i=0;i<data_size;i++)
         {
-            c[i]=((unsigned char*)data)[i];
+            string[i]=((unsigned char*)data)[i];
         }
-        ptr->data=c;
+        ptr->data=string;
         // TO DO: Have to check for NULL Pointer
     }
     return ptr;    // Return pointer to the new item
@@ -70,7 +91,7 @@ void insert_item(itemType *new_item, itemType **list_ptr)
 void print_item(itemType *item)
 {
     if(item!=NULL)
-        printf("Name: %s GUID: %d Addr: %d Addr.Successor: %d \n",item->name,item->guid,item,item->next_item);
+        printf("Name: %s GUID: %d Addr: %p Addr.Successor: %p \n",item->name,item->guid,item,item->next_item);
 }
 // print all items
 void print_items(itemType *list_start)
@@ -108,30 +129,39 @@ itemType *simple_delete_item(itemType *item)
 // Complete delete item
 // Deletes item 'to_delete' from the 'list'
 // return 0, if the item does not exist in the list, otherwise 1
-int delete_item(itemType *to_delete, itemType **list_ptr)
+bool delete_item(itemType *to_delete, itemType **list_ptr)
 {
     itemType *help_ptr=*list_ptr;   //list_ptr has to point to the list start!
     if(to_delete!=NULL && *list_ptr!=NULL)
     {
-        if(to_delete== *list_ptr)*list_ptr=simple_delete_item(to_delete);
+        if(to_delete== *list_ptr)
+        {
+            *list_ptr=simple_delete_item(to_delete);
+            return true;
+        }
         else
         {
-            printf("%d",(*list_ptr)->next_item);
+            printf("%p",(*list_ptr)->next_item);
             while(help_ptr->next_item!=to_delete && help_ptr->next_item!=NULL)
-            {
                 help_ptr=help_ptr->next_item;
-            }
+
             if(help_ptr->next_item!=NULL)
             {
                 help_ptr->next_item=simple_delete_item(help_ptr->next_item);
+                return true;
             }
             else
             {
                 printf("Warning: Item not in List! \n");
+                return false;
             }
         }
     }
-    else printf("Warning: Item or list NULL!\n");
+    else
+    {
+        printf("Warning: Item or list NULL!\n");
+        return false;
+    }
 }
 
 

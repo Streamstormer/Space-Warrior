@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 
 // Data structure of the individual items in the list.
@@ -47,7 +48,7 @@ itemType *simple_delete_item(itemType *item);
  * Deletes item 'to_delete' from the 'list'
  * return 0, if the item does not exist in the list, otherwise 1
  */
-int delete_item(itemType *to_delete, itemType **list_ptr);
+bool delete_item(itemType *to_delete, itemType **list_ptr);
 
 
 #endif // CHAINED_LIST_H_INCLUDED
