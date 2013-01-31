@@ -1,0 +1,29 @@
+# depslib dependency file v1.0
+1359497286 source:/home/benedikt/Dokumente/C/Space_Warrior/chained_list.c
+	"chained_list.h"
+
+1359466142 /home/benedikt/Dokumente/C/Space_Warrior/chained_list.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1359241381 source:/home/benedikt/Dokumente/C/Space_Warrior/SDL_String.c
+	"SDL_String.h"
+
+1359238219 /home/benedikt/Dokumente/C/Space_Warrior/SDL_String.h
+	<SDL/SDL.h>
+	<SDL/SDL_ttf.h>
+
+1359648847 source:/home/benedikt/Dokumente/C/Space_Warrior/space_warrior.c
+	<stdio.h>
+	<stdlib.h>
+	"SDL/SDL.h"
+	<SDL/SDL_ttf.h>
+	<time.h>
+	<stdbool.h>
+	<tgmath.h>
+	"SDL_String.h"
+	"chained_list.h"
+	<SDL/SDL_mixer.h>
+
+
