@@ -31,10 +31,8 @@ itemType *create_item()
 }
 itemType *create_item_generic(char* name, void* data)
 {
-
     static int guid_ctr=0;    // static counter to create unique ids
     itemType *ptr;
-
     ptr=malloc(sizeof(itemType));   // Allocate memory for the list item
     if(ptr!=NULL)
     {

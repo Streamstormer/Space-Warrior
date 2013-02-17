@@ -1,19 +1,18 @@
 #include "SDL_String.h"
 //Font stuff
-
-
 TTF_Font *ttf_font;
+int font_size;
 /*
  * Font Stuff:
  * ttf_font has to be initialized at first use!
  * */
-void setFont(char file[],int font_size)
+void setFont(char *file,int font_size2)
 {
-    TTF_Font *ttf_font = TTF_OpenFont(file, font_size);
+    ttf_font = TTF_OpenFont(file, font_size2);
     if (ttf_font == NULL)
     {
         printf("Unable to load font: %s %s \n", file, TTF_GetError());
-    }
+    }else font_size=font_size2;
 }
 /* Prints the given String to the Surface*/
 void drawString(char* str, int r, int b, int g,
@@ -29,7 +28,7 @@ void drawString(char* str, int r, int b, int g,
         SDL_BlitSurface(text_surface, NULL, screen, &rect);
         //Free the text_surface surface
         SDL_FreeSurface(text_surface);
-    }else printf("No Font loaded! Initialize Font before use.\n");
+    }else printf("No Font loaded! Initialize Font before use.");
 }
 void drawS(char str[],int x,int y,SDL_Surface *screen)
 {

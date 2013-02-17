@@ -3,15 +3,13 @@
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
-
-
 extern TTF_Font *ttf_font;
+extern int font_size;
 /*
  * Font Stuff:
  * ttf_font has to be initialized at first use!
  * */
 void setFont(char file[],int font_size);
-
 
 /* Prints the given String to the Surface*/
 void drawString(char* str, int r, int b, int g,

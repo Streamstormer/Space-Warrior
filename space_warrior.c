@@ -1,4 +1,39 @@
-// space_warrior.c
+/*  DHBW-space-warrior.c
+
+    The final fight between good old C and object-orientation is going on.
+	It's up to a few BA students to save the world from dominance of the expanding OO-empire.
+    Shoot the evil OO-Spaceships, but do not hit your friendly C spaceships!
+    Get ECTS (Extraterrestrial C training space) points for each OO-enemy destroyed,
+	lose ECTS points for each C spaceship accidentally hit!
+
+	TO DO: Have a look at the program and understand how it works.
+	TO DO: With which key can the program be exited?
+	TO DO: Get it compiled and run using the SDL library,
+	       take into account your specific development environment
+		   http://www.libsdl.org
+    TO DO: There are some bugs, which need to be fixed:
+	       - The ship is moving too slow, make it faster
+		   - the enemy should shoot more frequently
+		   - shots should be faster
+		   - currently you can't be hit by the enemy shots, what's the problem?
+    TO DO: Populate the space with more objects
+	TO DO: Give the ships a different look (shape and colors)
+	TO DO: Make your own speed changeable via the keyboard
+	TO DO: Count the destroyed spaceships and the hits to the player's ship
+	       and change the ECTS points accordingly.
+	TO DO: Add a display area, where the hit counts are displayed.
+	TO DO: Make the motions of enemies and friends more interesting.
+	TO DO: Make the enemy shots more dangerous by targeting your position
+	TO DO: Introduce an energy meter, which is reduced each time you are hit.
+    TO DO: The game should be finished, when there are no more enemy-objects left
+	       or when you run out of energy.
+	TO DO: Use SDL audio functions to add sound effects.
+	TO DO: Use the SDL Bitmap loader to provide more interesting graphics.
+    TO DO: Split the source code into separate files to make it more maintainable,
+	       adapt your build/make configuration accordingly.
+    TO DO: Add different game levels with varying difficulty
+	TO DO: Make this an interesting, original, feature-rich gaming experience ...
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,8 +44,8 @@
 #include <tgmath.h>
 #include "SDL_String.h"
 #include "chained_list.h"
+#include "draw_gui.h"
 #include <SDL/SDL_mixer.h>
-
 
 // Screen resolution
 int width, height;
@@ -36,7 +71,6 @@ enum obj_type_enum
 #define GUN_HEAT_STEPS 10
 #define GUN_HEATREGEN_STEPS 5
 
-#define withaudio 0
 // Structure that defines space object instances
 struct spc_obj
 {
@@ -45,22 +79,12 @@ struct spc_obj
     float x, y, z;              // Coordinates in Space
     float vx, vy, vz;           // Speed
 };
-struct menu_obj
-{
-    char *name;
-    SDL_Rect r;
-    Uint32 color;
-    int objs_size;
-    bool mouselistener;
-    struct menu_obj *overlay_objs;
-};
+
 // Object array
 struct spc_obj obj[MAX_OBJ];
 
-int shield_hit, ects,cnt=0, life=100, kills=0, gun_heat=100,mouse_objs_length=0;
+int shield_hit, ects,cnt=0, life=100, kills=0, gun_heat=100;
 bool esc=false, paused=false, mouse=false;
-itemType* list_start;
-struct menu_obj *mouse_objs;
 // Init object instances
 void init_object_instances()
 {
@@ -216,7 +240,6 @@ void init_enemy_shot(int enemy,int myvx,int myvy)
         }
     }
 }
-
 void move_object_instances(float myvx, float myvy)
 {
     int i, j;
@@ -288,7 +311,6 @@ void move_object_instances(float myvx, float myvy)
         }
 
 }
-
 void DrawObject(SDL_Surface *screen, float z, int sx, int sy, int type)
 {
     // Ship colors
@@ -397,7 +419,6 @@ void DrawObject(SDL_Surface *screen, float z, int sx, int sy, int type)
             }
     }
 }
-
 void draw_object_instances(SDL_Surface *screen)
 {
     int i, c;
@@ -443,7 +464,7 @@ void draw_interface_objects(SDL_Surface *screen)
     char c2[5];
     sprintf(c2,"%d%c",life,'%');
     drawS(c2,r.x+r.w/2-15,r.y+r.h/2-8,screen);
-    if(shield_hit==0)
+    if(shield_hit==0&&!paused)
     {
         if(life+REGENERATION_STEP-1<REGENERATION)
         {
@@ -486,121 +507,54 @@ void draw_interface_objects(SDL_Surface *screen)
     cnt++;
     cnt=cnt%200;
 }
-
-// returns the List (-Start) pointing to the last added Item
-itemType* addMenu(struct menu_obj *m_obj)
-{
-    itemType *currentItem=create_item_generic(m_obj->name,m_obj);
-    insert_item(currentItem,&list_start);
-    return currentItem; // Why no return!?
-}
-void addMenu2Panel(struct menu_obj *panel, struct menu_obj *objs,int objs_size)
-{
-    panel->overlay_objs=malloc(objs_size*sizeof(struct menu_obj));
-    printf("%p\n",panel->overlay_objs);
-    if(panel->overlay_objs!=NULL)
-    {
-        for(int i=0;i<objs_size;i++)
-        {
-            printf("%p %p \n",panel->overlay_objs[i],objs[i]);  // Ignor Warning. That is a pointer!
-            panel->overlay_objs[i]=objs[i];
-        }
-        panel->objs_size=objs_size;
-        printf("%d, %d\n",objs_size,panel->objs_size);
-    }else
-    {
-        printf("unable to allocate memmory \n");
-        panel->objs_size=0;
-    }
-}
-void draw_menu_object(SDL_Surface *screen, struct menu_obj *m_obj)
-{
-            //printf("asdf\n");
-    if(!(m_obj->r.x==0&&m_obj->r.y==0&&m_obj->r.w==0&&m_obj->r.h==0)&&m_obj->r.x>=0&&m_obj->r.y>=0)
-    {
-        SDL_FillRect(screen,&(m_obj->r),m_obj->color);
-        //printf("%d\n",m_obj);
-        //printf("%d\n",m_obj->objs_size);
-        //printf("%d/%d %d/%d\n",m_obj->r.x,m_obj->r.y,m_obj->r.w,m_obj->r.h);
-
-        /* LARGE NUMBER IN m_obj->obj_size ?!?!*/
-
-        for(int i=0;i<(m_obj->objs_size>20?0:m_obj->objs_size);i++)
-        {
-            if(m_obj->overlay_objs!=NULL)draw_menu_object(screen,m_obj->overlay_objs+i);
-        }
-    }
-            //printf("asdf2\n");
-}
-void draw_menu_objects(SDL_Surface *screen, itemType list_ptr)
-{
-    itemType *help_ptr=NULL;
-    help_ptr=&list_ptr;
-    int i=0;
-    while(help_ptr!=NULL)
-    {
-        i++;
-        draw_menu_object(screen,help_ptr->data);
-        help_ptr=help_ptr->next_item;
-    }
-}
-void add2MouseListener(struct menu_obj *obj)
-{
-    mouse_objs_length++;
-    mouse_objs=realloc(mouse_objs,mouse_objs_length*sizeof(struct menu_obj));
-    for(int i=0;i<mouse_objs_length-1;i++)mouse_objs++;
-    mouse_objs=obj;
-    for(int i=0;i<mouse_objs_length-1;i++)mouse_objs--;
-
-}
 void draw_menu(SDL_Surface *screen)
 {
     if(list_start==NULL)
     {
         struct menu_obj *panel;
-        panel=malloc(1*sizeof(struct menu_obj));
-        panel->name="1";
-        panel->r.y=height/2-200;
-        panel->r.x=width/2-150;
-        panel->r.w=300;
-        panel->r.h=400;
-        panel->objs_size=0;
-        panel->mouselistener=false;
-        panel->color=SDL_MapRGB(screen->format, 0, 0, 150);
-
+        panel=newPanel("1",width/2-150,height/2-200,300,400,SDL_MapRGB(screen->format, 0, 0, 150));
         addMenu(panel);
 
-        struct menu_obj *m_obj;
-        m_obj=malloc(1*sizeof(struct menu_obj));
-        m_obj->name="2";
-        m_obj->r.y=height/2-100;
-        m_obj->r.x=width/2-50;
-        m_obj->r.w=100;
-        m_obj->r.h=200;
-        panel->objs_size=0;
-        m_obj->mouselistener=true;
-        m_obj->color=SDL_MapRGB(screen->format, 100, 0, 0);
-
-        add2MouseListener(m_obj);
+        struct menu_obj *m_obj=newButton("ClickMe!",width/2-50,height/2-100,100,200,true,SDL_MapRGB(screen->format, 100, 0, 0));
         addMenu2Panel(panel,m_obj,1);
+        add2MouseListener(m_obj);
+
+        struct menu_obj *m_obj2=newButton("Exit!",width/2-100,height/2+100,200,50,true,SDL_MapRGB(screen->format, 100, 100, 0));
+        addMenu2Panel(panel,m_obj2,2);
+        add2MouseListener(m_obj2);
     }
     draw_menu_objects(screen,*list_start);
+}
+void mouseClicked(struct menu_obj *button,SDL_Surface *screen)
+{
+    printf("%s clicked! \n",mouse_objs->name);
+    if(!strcmp(button->name,"ClickMe!"))
+    {
+        mouse_objs->color=SDL_MapRGB(screen->format, 0, 150, 0);
+    }
+    if(!strcmp(button->name,"Exit!"))
+    {
+        exit(0);
+    }
 }
 void mouse_control(float *vx, float *vy, SDL_Surface *screen,SDL_Event *event)
 {
     if(mouse)
     {
-        *vx=(width/2)-event->motion.x;
-        *vy=(height/2)-event->motion.y;
+        if(!paused)
+        {
+            *vx=(width/2)-event->motion.x;
+            *vy=(height/2)-event->motion.y;
+        }
         for(int i=0;i<mouse_objs_length;i++)
         {
             if(mouse_objs->mouselistener)
             {
-                if(event->button.x > mouse_objs->r.x && event->button.x < (mouse_objs->r.x+mouse_objs->r.w) &&
+                if(event->type==SDL_MOUSEBUTTONDOWN)
+                    if(event->button.x > mouse_objs->r.x && event->button.x < (mouse_objs->r.x+mouse_objs->r.w) &&
                    event->button.y > mouse_objs->r.y && event->button.y < (mouse_objs->r.y+mouse_objs->r.h))
                 {
-                    printf("%s\n",mouse_objs->name);
-                    mouse_objs->color=SDL_MapRGB(screen->format, 0, 150, 0);
+                    mouseClicked(mouse_objs,screen);
                 }
             }
             if(i<mouse_objs_length-1)mouse_objs++;
@@ -669,7 +623,7 @@ int key_control(float *vx, float *vy,SDL_Event *event)
             break;
         }
     }
-    return 1;
+    return true;
 }
 int event_control(float *vx, float *vy, SDL_Surface *screen)
 {
@@ -686,10 +640,10 @@ int event_control(float *vx, float *vy, SDL_Surface *screen)
         case SDL_KEYUP:
             return key_control(vx,vy,&event);
         case SDL_QUIT:
-            return false;
+            return 0;
         default: break;
     }
-    return true;
+    return 1;
 
 }
 void cleanUp(Mix_Music *play_sound)
@@ -698,7 +652,7 @@ void cleanUp(Mix_Music *play_sound)
      Mix_CloseAudio();
      SDL_Quit();
 }
-// The Windows SDL Lib needs argc and argv... WHY!?
+// main
 int main(int argc, char *argv[])
 {
     float vx=0, vy=0;
@@ -710,18 +664,18 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     atexit(SDL_Quit);
-#ifdef __WIN32__
-    freopen("CON","w",stdout);
-    freopen("CON","w",stderr);
-#endif
+    #ifdef __WIN32__
+     freopen("CON","w",stdout);
+     freopen("CON","w",stderr);
+    #endif
+
 
     //init SDL_ttf
     if (TTF_Init() == -1)
     {
-        fprintf(stderr, "Unable to initialize SDL_ttf: %s \n", TTF_GetError());
+        printf("Unable to initialize SDL_ttf: %s \n", TTF_GetError());
         return EXIT_FAILURE;
-    }else ttf_font = TTF_OpenFont("Ubuntu.ttf", 14);
-
+    }else setFont("arial.ttf", 14);
     if(ttf_font == NULL)
     {
         fprintf(stderr, "Could not load Font: %s \n", TTF_GetError());
@@ -731,30 +685,25 @@ int main(int argc, char *argv[])
     // Initialize screen
     width=1024;
     height=768;
-    screen = SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE |  SDL_DOUBLEBUF );
+    screen = SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE |  SDL_DOUBLEBUF | SDL_FULLSCREEN);
     if( screen == NULL )
     {
         fprintf(stderr, "Unable to init video: %s\n", SDL_GetError());
         return EXIT_FAILURE;
     }
 
-#if withaudio
-    Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
-    Mix_Music* playMusic = Mix_LoadMUS("music.wav");
-    if(playMusic == NULL)
-        fprintf(stderr, "Could not Load Music-File: %s \n", Mix_GetError());
-
-    Mix_PlayMusic(play_sound, -1);
-#endif
+    //Audio
+    //Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+    //Mix_Music* play_sound = Mix_LoadMUS("music.wav");
+    //Mix_PlayMusic(play_sound, -1);
 
     //init
     init_object_instances();
-
     bool running=true;
     while(running)
     {
         running=event_control(&vx, &vy,screen);
-        while(!paused && life>0)
+        while(!paused&&life>0)
         {
             draw_object_instances(screen);
             draw_interface_objects(screen);
@@ -772,9 +721,7 @@ int main(int argc, char *argv[])
         //flip
         SDL_Flip(screen);
     }
-
-#if withaudio
-    cleanUp audio and exit.
-    cleanUp(play_sound);
-#endif
+    //cleanUp audio and exit.
+    //cleanUp(play_sound);
+    return 0;
 }
