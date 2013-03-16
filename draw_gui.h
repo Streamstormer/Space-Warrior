@@ -11,7 +11,7 @@
  */
 struct menu_obj
 {
-    char *name;
+    char name[50];
     SDL_Rect r;
     Uint32 color;
     int objs_size;

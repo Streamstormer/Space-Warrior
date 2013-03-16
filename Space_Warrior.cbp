@@ -43,6 +43,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="chained_list.h" />
+		<Unit filename="draw_gui.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="draw_gui.h" />
 		<Unit filename="space_warrior.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -675,7 +675,7 @@ int main(int argc, char *argv[])
     {
         printf("Unable to initialize SDL_ttf: %s \n", TTF_GetError());
         return EXIT_FAILURE;
-    }else setFont("arial.ttf", 14);
+    }else setFont("Ubuntu.ttf", 14);
     if(ttf_font == NULL)
     {
         fprintf(stderr, "Could not load Font: %s \n", TTF_GetError());
@@ -685,7 +685,7 @@ int main(int argc, char *argv[])
     // Initialize screen
     width=1024;
     height=768;
-    screen = SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE |  SDL_DOUBLEBUF | SDL_FULLSCREEN);
+    screen = SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE |  SDL_DOUBLEBUF);
     if( screen == NULL )
     {
         fprintf(stderr, "Unable to init video: %s\n", SDL_GetError());

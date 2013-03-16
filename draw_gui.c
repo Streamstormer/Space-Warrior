@@ -12,7 +12,7 @@ struct menu_obj* newPanel(char *name,int x,int y,int w, int h, Uint32 SDL_color)
     panel->r.w=w;
     panel->r.h=h;
     panel->color=SDL_color;
-    panel->name=name;
+    strcpy(panel->name, name);
 
     panel->objs_size=0;
     panel->overlay_objs=NULL;

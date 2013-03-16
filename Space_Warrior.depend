@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1359662530 source:/home/benedikt/Dokumente/C/Space_Warrior/chained_list.c
+1363461057 source:/home/benedikt/Dokumente/C/Space_Warrior/chained_list.c
 	"chained_list.h"
 
 1359662488 /home/benedikt/Dokumente/C/Space_Warrior/chained_list.h
@@ -8,14 +8,14 @@
 	<string.h>
 	<stdbool.h>
 
-1359652483 source:/home/benedikt/Dokumente/C/Space_Warrior/SDL_String.c
+1363461057 source:/home/benedikt/Dokumente/C/Space_Warrior/SDL_String.c
 	"SDL_String.h"
 
-1359652490 /home/benedikt/Dokumente/C/Space_Warrior/SDL_String.h
+1363461057 /home/benedikt/Dokumente/C/Space_Warrior/SDL_String.h
 	<SDL/SDL.h>
 	<SDL/SDL_ttf.h>
 
-1359661659 source:/home/benedikt/Dokumente/C/Space_Warrior/space_warrior.c
+1363463424 source:/home/benedikt/Dokumente/C/Space_Warrior/space_warrior.c
 	<stdio.h>
 	<stdlib.h>
 	"SDL/SDL.h"
@@ -25,5 +25,16 @@
 	<tgmath.h>
 	"SDL_String.h"
 	"chained_list.h"
+	"draw_gui.h"
 	<SDL/SDL_mixer.h>
+
+1363464430 source:/home/benedikt/Dokumente/C/Space_Warrior/draw_gui.c
+	"draw_gui.h"
+
+1363464430 /home/benedikt/Dokumente/C/Space_Warrior/draw_gui.h
+	<SDL/SDL.h>
+	<SDL/SDL_ttf.h>
+	<stdbool.h>
+	"chained_list.h"
+	"SDL_String.h"
 
