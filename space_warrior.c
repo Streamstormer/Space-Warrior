@@ -71,6 +71,8 @@ enum obj_type_enum
 #define GUN_HEAT_STEPS 10
 #define GUN_HEATREGEN_STEPS 5
 
+#define WITHAUDIO 0
+
 // Structure that defines space object instances
 struct spc_obj
 {
@@ -692,10 +694,14 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    //Audio
-    //Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
-    //Mix_Music* play_sound = Mix_LoadMUS("music.wav");
-    //Mix_PlayMusic(play_sound, -1);
+    #if WITHAUDIO
+    Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+    Mix_Music* playMusic = Mix_LoadMUS("music.wav");
+    if(playMusic == NULL)
+        fprintf(stderr, "Could not load Music File: %s \n", Mix_GetError());
+
+    Mix_PlayMusic(playMusic, -1);
+    #endif // withaudio
 
     //init
     init_object_instances();
@@ -721,7 +727,9 @@ int main(int argc, char *argv[])
         //flip
         SDL_Flip(screen);
     }
+    #if WITHAUDIO
     //cleanUp audio and exit.
-    //cleanUp(play_sound);
+    cleanUp(playMusic);
+    #endif
     return 0;
 }
